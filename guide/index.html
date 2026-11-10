@@ -1,0 +1,665 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'self' https:; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#2142FF">
+<title>AI 职业向导</title>
+<style>
+:root{
+  --blue:#2142FF; --blue-d:#1631D6; --soft:#EDF0FF;
+  --ink:#0F1115; --ink2:#3A3F4A; --muted:#6B7180; --line:#DDE1E8;
+  --bg:#F3F4F7; --card:#FFFFFF; --mark:#E8FF5A;
+  --font:-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+  --safe-b:env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{font-family:var(--font);background:#E4E6EC;color:var(--ink);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button,input,textarea{font:inherit;color:inherit;border:0;background:none}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
+.app{max-width:480px;margin:0 auto;min-height:100%;background:var(--bg);position:relative;box-shadow:0 0 0 1px rgba(15,17,21,.04)}
+.screen{display:none;min-height:100vh;min-height:100dvh}
+.screen.on{display:flex;flex-direction:column}
+
+/* 首页 */
+.hero{position:relative;overflow:hidden;background:var(--blue);color:#fff;padding:22px 24px 70px}
+.hero-bg{position:absolute;inset:-10px -40px;display:flex;flex-direction:column;gap:6px;opacity:.16;font-size:13px;line-height:1.5;white-space:nowrap;pointer-events:none;transform:rotate(-8deg);transform-origin:center}
+.hero-bg span{display:block}
+.hero-bg b{font-weight:700;opacity:1}
+.brand{position:relative;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;letter-spacing:.02em}
+.logo{width:26px;height:26px;border-radius:8px;background:#fff;position:relative;flex:none}
+.logo:before,.logo:after{content:"";position:absolute;border-radius:50%}
+.logo:before{width:8px;height:8px;left:5px;top:9px;background:var(--blue)}
+.logo:after{width:8px;height:8px;right:5px;top:9px;background:var(--mark);box-shadow:0 0 0 1.5px var(--blue)}
+.hero h1{position:relative;margin-top:30px;font-size:31px;line-height:1.28;font-weight:800;letter-spacing:-.01em}
+.hero .lead{position:relative;margin-top:14px;font-size:15.5px;line-height:1.7;color:rgba(255,255,255,.88);max-width:23em}
+.sheet{position:relative;flex:1;margin-top:-44px;background:var(--bg);border-radius:24px 24px 0 0;padding:26px 20px 24px}
+.q{font-size:19px;font-weight:700;display:flex;align-items:baseline;gap:10px}
+.q span{font-size:13.5px;font-weight:500;color:var(--muted)}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:16px}
+.chip{position:relative;min-height:50px;padding:8px 6px;border-radius:14px;background:var(--card);border:1.5px solid var(--line);font-size:15.5px;font-weight:500;line-height:1.3;text-align:center;transition:transform .12s ease, background .15s ease, border-color .15s ease}
+.chip:active{transform:scale(.97)}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.chip .n{position:absolute;top:-7px;right:-5px;width:20px;height:20px;border-radius:50%;background:var(--mark);color:var(--ink);font-size:12px;font-weight:700;line-height:20px;text-align:center;box-shadow:0 0 0 2px var(--bg)}
+.custom{display:flex;gap:8px;margin-top:14px}
+.custom input{flex:1;min-width:0;height:48px;padding:0 14px;border-radius:14px;background:var(--card);border:1.5px dashed #C3C8D3;font-size:15px}
+.custom input:focus{border-style:solid;border-color:var(--blue);outline:none}
+.custom button{height:48px;padding:0 18px;border-radius:14px;background:var(--ink);color:#fff;font-size:15px;font-weight:600}
+.hint{min-height:20px;margin-top:6px;font-size:13px;color:#B42318}
+.how{list-style:none;margin-top:14px;padding:16px 16px 4px;border-radius:18px;background:var(--card);counter-reset:s}
+.how li{counter-increment:s;position:relative;padding:0 0 14px 40px;font-size:14px;line-height:1.55;color:var(--ink2)}
+.how li:before{content:counter(s);position:absolute;left:0;top:-1px;width:26px;height:26px;border-radius:50%;background:var(--soft);color:var(--blue);font-weight:700;font-size:13px;line-height:26px;text-align:center}
+.how b{display:block;color:var(--ink);font-size:15px}
+.fine{margin-top:14px;font-size:12.5px;line-height:1.6;color:var(--muted);text-align:center}
+.cta{position:sticky;bottom:0;padding:12px 20px calc(12px + var(--safe-b));background:linear-gradient(rgba(243,244,247,0),var(--bg) 30%)}
+.btn{display:block;width:100%;height:54px;border-radius:16px;background:var(--blue);color:#fff;font-size:17px;font-weight:700;letter-spacing:.02em;transition:background .15s ease, transform .12s ease}
+.btn:active{transform:scale(.985);background:var(--blue-d)}
+.btn:disabled{background:#C9CDD6;color:#fff;cursor:not-allowed;transform:none}
+.btn.ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+
+/* 对话 */
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:56px;padding:0 10px;background:rgba(243,244,247,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.back{width:40px;height:40px;border-radius:12px;font-size:28px;line-height:36px;color:var(--ink2)}
+.bar-title{display:flex;flex-direction:column;min-width:0}
+.bar-title b{font-size:16px}
+.bar-title span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.steps{position:sticky;top:56px;z-index:4;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:4px 16px 10px;background:rgba(243,244,247,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.step i{display:block;height:4px;border-radius:2px;background:#D5D9E2;transition:background .3s ease}
+.step span{display:block;margin-top:6px;font-size:12px;color:var(--muted);text-align:center}
+.step.done i{background:#9EAEFF}
+.step.now i{background:var(--blue)}
+.step.now span{color:var(--blue);font-weight:700}
+.mode{margin:4px 16px 0;padding:9px 12px;border-radius:12px;background:#FBFFE0;border:1px solid #DDE88A;font-size:12.5px;line-height:1.55;color:#4A4F1C}
+.log{flex:1;display:flex;flex-direction:column;gap:12px;padding:16px 16px 8px}
+.msg{max-width:86%;padding:12px 15px;border-radius:20px;font-size:16px;line-height:1.7;white-space:pre-wrap;word-break:break-word;animation:pop .28s ease both}
+.msg.a{align-self:flex-start;background:var(--card);border-bottom-left-radius:6px;box-shadow:0 1px 0 rgba(15,17,21,.04)}
+.msg.u{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.msg.sys{align-self:center;max-width:100%;padding:6px 12px;border-radius:12px;background:transparent;color:var(--muted);font-size:13px;text-align:center}
+.msg.safe{border:2px solid var(--blue)}
+.msg.safe a{display:inline-block;margin-top:10px;padding:8px 16px;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;text-decoration:none}
+.who{display:block;margin-bottom:3px;font-size:12px;font-weight:700;color:var(--blue);letter-spacing:.04em}
+.typing{align-self:flex-start;display:flex;gap:5px;padding:16px 16px;border-radius:20px;border-bottom-left-radius:6px;background:var(--card)}
+.typing i{width:7px;height:7px;border-radius:50%;background:#AEB4C2;animation:blink 1s infinite ease-in-out}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+.opts{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
+.opt{padding:10px 14px;border-radius:14px;background:var(--card);border:1.5px solid #C9D2FF;color:var(--blue-d);font-size:15px;font-weight:600;line-height:1.3;animation:pop .28s ease both}
+.opt:active{background:var(--soft)}
+.opt.go{background:var(--blue);border-color:var(--blue);color:#fff}
+.composer{position:sticky;bottom:0;z-index:5;padding:8px 12px calc(8px + var(--safe-b));background:rgba(243,244,247,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(15,17,21,.06)}
+.wrap{display:block;margin:0 auto 8px;padding:7px 14px;border-radius:12px;background:var(--mark);color:var(--ink);font-size:14px;font-weight:700}
+.send{display:flex;align-items:flex-end;gap:8px}
+.send textarea{flex:1;min-width:0;max-height:120px;min-height:46px;padding:12px 14px;border-radius:16px;background:var(--card);border:1.5px solid var(--line);font-size:16px;line-height:1.4;resize:none}
+.send textarea:focus{outline:none;border-color:var(--blue)}
+.send button{flex:none;height:46px;padding:0 18px;border-radius:16px;background:var(--blue);color:#fff;font-weight:700;font-size:15px}
+.send button:disabled{background:#C9CDD6}
+.note{margin-top:7px;font-size:11.5px;color:var(--muted);text-align:center}
+
+/* 探索卡 */
+.cardwrap{flex:1;padding:6px 16px calc(24px + var(--safe-b))}
+.ecard{background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 10px 30px rgba(33,66,255,.10), 0 1px 0 rgba(15,17,21,.05)}
+.ec-top{position:relative;overflow:hidden;padding:20px 20px 22px;background:var(--blue);color:#fff}
+.ec-top small{font-size:13px;opacity:.85;letter-spacing:.06em}
+.ec-top h1{margin-top:6px;font-size:30px;line-height:1.25;font-weight:800}
+.ec-top p{margin-top:6px;font-size:14px;opacity:.9}
+.ec-sec{padding:16px 20px;border-top:1px solid #EEF0F4}
+.ec-sec:first-of-type{border-top:0}
+.ec-sec h2{font-size:12.5px;font-weight:700;color:var(--muted);letter-spacing:.06em}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{padding:5px 11px;border-radius:999px;background:var(--soft);color:var(--blue-d);font-size:14px;font-weight:600}
+.tag.hl{background:var(--mark);color:var(--ink)}
+.learned{margin-top:8px;font-size:16px;line-height:1.7}
+.opening{margin-top:8px;padding:12px 14px;border-left:4px solid var(--blue);background:#F7F8FB;border-radius:0 12px 12px 0;font-size:15.5px;line-height:1.75}
+.qs{list-style:none;margin-top:6px;counter-reset:q}
+.qs li{counter-increment:q;position:relative;padding:10px 0 10px 38px;font-size:15.5px;line-height:1.65;border-top:1px dashed #E3E6EC}
+.qs li:first-child{border-top:0}
+.qs li:before{content:counter(q);position:absolute;left:0;top:10px;width:26px;height:26px;border-radius:8px;background:var(--ink);color:#fff;font-size:13px;font-weight:700;line-height:26px;text-align:center}
+.ec-foot{padding:12px 20px 16px;font-size:12.5px;line-height:1.6;color:var(--muted);background:#FAFBFC}
+.actions{display:grid;gap:10px;margin-top:16px}
+.tips{margin-top:16px;padding:14px 16px;border-radius:16px;background:var(--card);font-size:14px;line-height:1.7;color:var(--ink2)}
+.tips b{color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(90px + var(--safe-b));z-index:20;transform:translateX(-50%);padding:10px 16px;border-radius:12px;background:var(--ink);color:#fff;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.toast.on{opacity:1}
+@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,80%,100%{opacity:.3}40%{opacity:1}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+@media (min-width:520px){.app{margin-top:0}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="home" class="screen on" aria-labelledby="h-title">
+  <header class="hero">
+    <div class="hero-bg" id="heroBg" aria-hidden="true"></div>
+    <div class="brand"><span class="logo" aria-hidden="true"></span>AI 职业向导</div>
+    <h1 id="h-title">从你喜欢的事出发，<br>认识 3 个职业</h1>
+    <p class="lead">和向导聊 5 分钟。聊完拿到一张探索卡，再去问一位正在做这份工作的人。</p>
+  </header>
+  <main class="sheet">
+    <h2 class="q">你平时喜欢做什么？<span>选 1 到 3 个</span></h2>
+    <div class="chips" id="chips" role="group" aria-label="兴趣"></div>
+    <form class="custom" id="customForm" autocomplete="off">
+      <input id="customInput" maxlength="10" placeholder="都不是？自己写一个" aria-label="自己写一个兴趣，10 个字以内">
+      <button type="submit">添加</button>
+    </form>
+    <p class="hint" id="customHint" role="status"></p>
+    <ol class="how" aria-label="怎么聊">
+      <li><b>聊兴趣</b>说说你最近一次做这件事</li>
+      <li><b>连职业</b>向导给出 3 个相关的职业</li>
+      <li><b>看一天</b>挑一个，看看它普通的一天</li>
+      <li><b>问真人</b>拿到探索卡，去问一个正在做的人</li>
+    </ol>
+    <p class="fine">不用注册，不问名字和学校，聊天内容不保存。</p>
+  </main>
+  <footer class="cta"><button id="startBtn" class="btn" disabled>选好了，开始聊</button></footer>
+</section>
+
+<section id="chat" class="screen" aria-label="和向导聊天">
+  <header class="bar">
+    <button class="back" id="backBtn" aria-label="回到首页">‹</button>
+    <div class="bar-title"><b>AI 职业向导</b><span id="chatInterests"></span></div>
+  </header>
+  <div class="steps" id="steps" aria-label="进度">
+    <div class="step"><i></i><span>聊兴趣</span></div>
+    <div class="step"><i></i><span>连职业</span></div>
+    <div class="step"><i></i><span>看一天</span></div>
+    <div class="step"><i></i><span>问真人</span></div>
+  </div>
+  <div class="mode" id="modeNote" hidden>离线示例版：下面的回答是提前写好的，不是 AI 现场生成的。</div>
+  <main class="log" id="log" aria-live="polite"></main>
+  <div class="opts" id="opts"></div>
+  <footer class="composer" id="composer">
+    <button class="wrap" id="wrapBtn" hidden>聊到这里，帮我整理探索卡</button>
+    <form id="sendForm" class="send" autocomplete="off">
+      <textarea id="text" rows="1" maxlength="200" placeholder="也可以自己打字回答" aria-label="输入你的回答"></textarea>
+      <button type="submit" id="sendBtn">发送</button>
+    </form>
+    <p class="note">向导讲的是一般情况，不代表每个人。</p>
+  </footer>
+</section>
+
+<section id="card" class="screen" aria-labelledby="c-focus">
+  <header class="bar">
+    <button class="back" id="cardBack" aria-label="回到对话">‹</button>
+    <div class="bar-title"><b>我的探索卡</b><span>截图或者复制，发给爸妈</span></div>
+  </header>
+  <main class="cardwrap">
+    <article class="ecard">
+      <div class="ec-top"><small>职业探索卡</small><h1 id="c-focus"></h1><p id="c-from"></p></div>
+      <div class="ec-sec"><h2>这次认识的职业</h2><div class="tags" id="c-careers"></div></div>
+      <div class="ec-sec"><h2>我学到的一点</h2><p class="learned" id="c-learned"></p></div>
+      <div class="ec-sec"><h2>去问一位真人，可以这样开口</h2><p class="opening" id="c-opening"></p></div>
+      <div class="ec-sec"><h2>想问的 3 个问题</h2><ol class="qs" id="c-qs"></ol></div>
+      <p class="ec-foot">向导讲的是一般情况。真实的样子，以正在做这份工作的人说的为准。</p>
+    </article>
+    <div class="actions">
+      <button class="btn" id="copyBtn">复制整张卡</button>
+      <button class="btn ghost" id="againBtn">换个兴趣，再聊一次</button>
+    </div>
+    <p class="tips"><b>找谁问？</b>爸妈、亲戚、爸妈的朋友、同学的家长都可以。第一次问，请爸妈帮你约，见面或者打电话都行。问完，记下最让你意外的一件事。</p>
+  </main>
+</section>
+
+<div class="toast" id="toast" role="status"></div>
+</div>
+
+<noscript><p style="padding:24px;font-size:16px">请打开浏览器的 JavaScript 后再使用。</p></noscript>
+
+<script>
+"use strict";
+/* ========= 配置 =========
+   API_URL 留空：使用离线示例版（回答是提前写好的）。
+   部署后台以后填上，例如 "https://你的域名/api/chat"；网页和后台在同一个域名下时填 "/api/chat"。 */
+const API_URL = "";
+
+const END_REQUEST = "我想先聊到这里，请帮我整理探索卡。";
+const MAX_TURNS = 10;
+const INTEREST_RE = /^[\u4e00-\u9fffA-Za-z0-9·、\- ]{1,10}$/;
+const SAFETY_RE = /自杀|不想活|想死|去死|自残|伤害自己|割腕|跳楼|轻生|被欺负|被霸凌|霸凌|被打/;
+const SAFETY_REPLY = "听你这么说，我很担心你。这件事比聊职业重要得多。请现在就告诉一个你信任的大人或者老师；也可以拨打 12355 青少年服务热线，会有人认真听你说。";
+const BASE_Q = "你最近一个工作日，从早到晚都做了哪些事？";
+
+/* 兴趣：名称、问法、第一题的选项、相关职业（标签：idea 想点子 / make 动手做 / people 和人一起 / think 弄明白） */
+const INTERESTS = [
+  ["画画", "画画", ["画了一个喜欢的角色", "给别人画了点东西", "照着教程练习"], [["设计师","idea"],["插画师","make"],["老师","people"],["建筑师","think"]]],
+  ["打游戏", "玩游戏", ["和朋友组队打", "研究怎么通关", "琢磨游戏的玩法"], [["游戏策划","idea"],["动画师","make"],["市场营销","people"],["程序员","think"]]],
+  ["运动", "运动", ["参加了比赛", "和朋友一起练", "自己坚持锻炼"], [["记者","idea"],["消防员","make"],["健身教练","people"],["运动康复师","think"]]],
+  ["音乐", "听歌、唱歌或者弹琴", ["学会了一首新曲子", "和别人一起表演", "反复听一首歌"], [["视频博主","idea"],["音乐制作人","make"],["老师","people"],["硬件工程师","think"]]],
+  ["看书写作", "看书或者写东西", ["读完了一本书", "写了一篇文章", "在网上看连载"], [["市场营销","idea"],["编辑","make"],["记者","people"],["律师","think"]]],
+  ["做手工", "做手工", ["做了一个小东西", "修好了一样东西", "照着视频做"], [["设计师","idea"],["机械工程师","make"],["开店的老板","people"],["建筑师","think"]]],
+  ["拍照拍视频", "拍照或者拍视频", ["拍了一段视频", "给朋友拍照", "剪了一个片子"], [["视频博主","idea"],["摄影师","make"],["记者","people"],["电商运营","think"]]],
+  ["小动物", "和小动物待在一起", ["照顾家里的宠物", "去看了动物", "查了动物的资料"], [["兽医","make"],["开店的老板","people"],["科研人员","think"]]],
+  ["做吃的", "做吃的", ["做了一道菜", "烤了点心", "给家人做饭"], [["厨师","make"],["开店的老板","people"],["科研人员","think"]]],
+  ["电脑编程", "用电脑做东西", ["写了一个小程序", "做了一个网页", "研究电脑和软件"], [["产品经理","idea"],["程序员","make"],["数据分析师","think"],["硬件工程师","make"]]],
+  ["数学", "做数学题", ["解出一道难题", "参加了竞赛", "给同学讲题"], [["投资人","idea"],["会计","make"],["老师","people"],["数据分析师","think"]]],
+  ["科学实验", "做实验或者研究东西", ["做了一个实验", "看了科普视频", "拆开研究一样东西"], [["硬件工程师","make"],["医生","people"],["科研人员","think"],["药师","make"]]],
+  ["和人聊天", "和人聊天", ["安慰了一个朋友", "和不认识的人聊起来", "说服了别人"], [["记者","idea"],["销售","people"],["心理咨询师","think"],["老师","make"]]],
+  ["帮助别人", "帮别人", ["帮同学解决问题", "做了志愿者", "照顾家里的人"], [["警察","idea"],["护士","make"],["社工","people"],["医生","think"]]],
+  ["组织活动", "组织一件事", ["组织了班级活动", "带着大家做项目", "安排了一次出游"], [["产品经理","idea"],["创业者","make"],["公务员","people"],["市场营销","think"]]],
+  ["旅行外语", "旅行或者学外语", ["去了一个新地方", "和外国人说上话", "看外语的视频"], [["外贸","idea"],["飞行员","make"],["导游","people"],["翻译","think"]]]
+];
+const DEFAULT_POOL = [["设计师","idea"],["机械工程师","make"],["老师","people"],["科研人员","think"]];
+const FLAVORS = [["想点子、出主意","idea"],["动手把它做出来","make"],["和别人一起、帮到人","people"],["把道理弄明白","think"]];
+
+/* 职业：一句话、普通的一天、最辛苦、最有意思、常见误会（很多人以为 + 其实）、两个问真人的问题 */
+const CAREERS = {
+  "设计师":["把要传达的意思，变成好懂、好用的画面","上午和产品、客户讨论要解决什么问题，画几个方案；下午做细节，开会讲方案、听意见，再改。","方案常被否，要反复修改，还要说服不懂设计的人","自己设计的东西，很多人每天都在用","就是把东西弄好看","更多是在解决问题，好看只是其中一部分","最近一个你最满意的设计，是做什么的？前前后后改了多少版？","最近一次别人不认可你的设计，是什么情况？后来是怎么改的？"],
+  "插画师":["为书、游戏、广告画图，按需求反复修改","上午和客户或者编辑确认要画什么，画草图；下午上色、细化。赶稿的时候，常常要改到很晚。","一张图常要改很多遍，还要按时交稿","自己画的东西印在书上、出现在游戏里","整天自由地画自己想画的","大部分时间是在按别人的需求画","最近一张你最满意的图，是给谁画的？改了几版？","最近一次客户不认可你的图，是什么情况？后来怎么改的？"],
+  "建筑师":["设计房子和空间，从画图一直跟到盖好","上午画图、做模型，和结构、水电工程师对方案；下午可能去工地看进度，或者给业主讲方案。","一个项目要好几年，要同时满足规范、预算和很多人的意见","走进一栋自己参与设计的楼","主要靠灵感画漂亮的房子","大量时间在算面积、对规范、改方案","最近一个你参与设计的建筑，现在建成什么样了？从画图到建成用了多久？","最近一次设计要大改，是因为什么？改的时候你最舍不得的是什么？"],
+  "老师":["备课、上课、改作业，也要照顾每个学生","上午上两三节课；下午改作业、备课、找学生谈话，有时还要开会、和家长沟通。","要同时照顾几十个不一样的学生，事情又多又碎","看到一个学生突然开窍","有寒暑假，很轻松","假期里也常有培训和备课，学期里很忙","最近一节你觉得上得很好的课，是讲什么的？你是怎么准备的？","最近一次遇到很难教或者很难管的情况，是什么事？后来是怎么处理的？"],
+  "游戏策划":["设计游戏的玩法、关卡和规则","上午写设计文档、算数值；下午和程序、美术开会，试玩新版本，记下要改的地方。","想法常被否掉，上线后还要面对玩家直接的批评","看到玩家在玩自己设计的关卡","每天就是玩游戏","大部分时间在写文档、算数值、和人沟通","最近一个你设计的玩法上线了，玩家是什么反应？你是怎么知道的？","最近一次你的想法被否掉了，是因为什么？后来是怎么改的？"],
+  "动画师":["让角色和画面动起来，一帧一帧地调动作","上午看分镜，弄清这个镜头要表达什么；下午做动作、调节奏，交给导演看，再按意见改。","几秒钟的动作，可能要做好几天、反复调","自己做的角色像活了一样动起来","画得好就行","还要懂表演、节奏，会用很多软件","最近你做的一个镜头，是什么动作？前后改了几次？","最近一次被导演打回来，是因为什么？后来怎么改的？"],
+  "程序员":["把需求变成能运行的软件，再修好它的问题","上午开个短会，写代码、做功能；下午和产品、测试对需求，查问题、修 bug。","查一个难找的问题，可能要花好几天","自己写的功能被很多人用上","整天一个人对着电脑，不用和人打交道","要花很多时间和同事沟通需求","最近一次你写的功能上线了，是做什么用的？你是怎么知道有人在用的？","最近一次遇到很难查的 bug，花了多久？最后是什么原因？"],
+  "市场营销":["想办法让对的人知道一个产品，并且愿意买","上午看数据，看上一场活动效果怎么样；下午写方案，和设计、渠道开会，准备下一场活动。","花了钱效果不好，要说清楚原因","一个点子让很多人记住了这个产品","就是打广告","更多是在研究用户是谁、为什么会买","最近一次你做的活动或者广告效果很好，是什么？你是怎么知道效果好的？","最近一次花了钱效果却不好，是什么情况？后来是怎么调整的？"],
+  "健身教练":["带学员训练，帮他们练得安全、有效","早上和晚上是上课最多的时候；中间写训练计划、自己训练，也要想办法招新学员。","上课时间零散，收入和学员多少直接相关","学员练出了明显的变化","身材好就能当","要懂人体、会定计划，还要会和人沟通","最近一个学员练出了明显的变化，你是怎么带他的？","最近一次学员不想练了，你是怎么做的？后来他回来了吗？"],
+  "运动康复师":["帮受伤或者做完手术的人，通过训练恢复","上午评估新来的人哪里有问题、定方案；下午一对一带康复训练，记录每个人的进展。","恢复很慢，要陪人熬过很难的一段时间","看着一个人重新走路、重新上场","就是按摩、推拿","主要靠评估和训练，要学不少医学知识","最近一个恢复得很好的人，你是怎么帮他练的？","最近一次有人练不下去了，你是怎么做的？"],
+  "消防员":["灭火、救援，不出警的时候训练和检查","在消防站轮班，接到警情马上出发；不出警时练体能、练器材，也去单位做消防检查。","随时可能出警，现场很危险","把人从危险里救出来","主要是灭火","很多时候是在救援：车祸、被困、高空","最近一次出警，是什么情况？出发前那几分钟你们在做什么？","没有出警的时候，你们一天是怎么训练的？哪一项训练最难？"],
+  "记者":["找到值得报道的事，采访、核实、写出来","上午开选题会、联系采访对象；下午出去采访，晚上整理录音、写稿，交给编辑改。","采访常常不顺利，还要赶截稿时间","自己写的报道，让一件事被更多人看见","整天在外面跑，很自由","很多时间在核实信息、反复改稿","你最近写的一篇稿子，是怎么找到这个题目的？采访了几个人？","最近一次采访很不顺，是什么情况？后来是怎么拿到信息的？"],
+  "音乐制作人":["把一首歌从一个想法，做成能发布的作品","上午写旋律、编曲；下午在录音棚录人声和乐器，再一轨一轨地混音，按歌手的意见改。","一首歌常要改很多版，收入也不稳定","听到自己做的歌被别人循环播放","主要靠灵感","大部分时间在编曲、录音、混音这些细活上","最近做完的一首歌，从想法到做完用了多久？","最近一次被要求大改，是因为什么？"],
+  "视频博主":["策划、拍摄、剪辑视频，再看数据调整","上午想选题、写脚本；下午拍摄、剪辑，发布后看数据、回评论，再想下一条。","要一直更新，数据起伏也很大","一条视频被很多人看到、讨论","拍拍视频就能火","大多数人要坚持很久，背后是大量的策划和剪辑","最近一条数据最好的视频，你觉得是做对了什么？拍和剪一共花了多久？","最近一次一条视频没人看，你是怎么想的？下一条你改了什么？"],
+  "硬件工程师":["设计电路和设备，做出样品，再反复测试","上午画电路图、选元器件；下午在实验室调样品、做测试，和工厂沟通生产上的问题。","样品出了问题，要一点一点排查","第一次拿到自己设计的东西的实物","和写程序差不多","要和真实的元器件、工厂和成本打交道","最近一次你做的东西第一次做出样品，是什么东西？","最近一次样品出了问题，是什么问题？你们是怎么找到原因的？"],
+  "编辑":["选稿、改稿，把一本书或一篇文章做好","上午读稿、提修改意见；下午和作者沟通，安排排版、校对，确认封面和印刷的细节。","一本书要来回改很多遍，细节一个都不能错","一本书从一沓稿子，变成摆在书店里","就是挑错别字","更重要的是判断什么值得出、怎么写更好","最近你做的一本书或者一篇稿子，是怎么找到的？","最近一次和作者意见不一样，是因为什么？后来怎么定的？"],
+  "律师":["帮当事人分析问题、写文件、谈判或者出庭","上午查法条和案例、写文件；下午见当事人，或者去法院开庭、和对方律师谈判。","材料多、责任大，经常要加班","把一团乱的问题理清楚，帮到当事人","天天在法庭上辩论","大部分时间在读材料、写文件","最近一个让你印象很深的案子，是什么类型的？最关键的是哪一步？","最近一次开庭或者谈判的前一天，你在做什么？"],
+  "开店的老板":["什么都要管：进货、定价、招人、算账","上午进货、检查店里；营业时招呼顾客、处理各种问题；打烊后算账，想下个月怎么卖。","生意不好的时候，压力全在自己身上","老顾客一次一次地回来","当老板很自由","常常是店里最早来、最晚走的人","最近一次店里生意特别好，是因为什么？你是怎么发现的？","最近一次遇到难办的顾客，或者亏了钱，是什么情况？"],
+  "摄影师":["拍照，并且把照片修到能交给客户","上午和客户确认要拍什么、准备器材；下午去现场拍，回来挑片、修图，按客户意见改。","要扛着器材跑现场，修图很花时间","等到一个刚刚好的瞬间","有好相机就能拍好","更重要的是光线、构图，和与人沟通","最近拍到的一张你最满意的照片，是怎么拍到的？等了多久？","最近一次客户对照片不满意，是什么情况？后来是怎么处理的？"],
+  "电商运营":["想办法让一家网店的东西卖得更好","上午看昨天的销量和数据；下午改商品页面、定活动方案，和客服、仓库、设计沟通。","大促前后特别忙，数据一有波动就要找原因","自己的一个调整，让销量涨了","就是上架商品","大部分时间在看数据、想办法","最近一次你负责的商品卖得特别好，你觉得是做对了什么？","最近一次大促或者活动出了问题，是什么问题？当时是怎么补救的？"],
+  "兽医":["给动物看病、做手术，也要和主人沟通","上午接诊，给动物检查、打针；下午做手术或者照顾住院的动物，向主人解释病情。","动物说不出哪里疼，有时还会咬人","救回一只病得很重的动物","整天和可爱的动物玩","要面对生病、受伤，有时还有离别","最近一次救回一只动物，是什么情况？当时最难的是哪一步？","最近一次和宠物主人沟通很难，是因为什么？后来是怎么说通的？"],
+  "科研人员":["提出问题，用实验和数据去找答案","上午读论文、设计实验；下午在实验室做实验、记数据，和组里的人讨论结果。","实验经常失败，几个月都可能没有进展","发现一个以前没人知道的东西","天天都有大发现","大多数日子是在重复实验、排查问题","最近一次实验或者研究有了新发现，是什么时候？那一刻你在做什么？","最近一次做了很久却失败了，是什么事？失败以后你做了什么？"],
+  "厨师":["备料、做菜，在出餐最忙的时候把每道菜做好","上午备料：洗、切、腌、熬汤；中午和晚上出餐最忙，要又快又稳；收工后清洁、盘点。","站一整天，后厨又热又忙","客人吃完，特意来夸一句","每天都在研究新菜","大部分时间在备料，保证每道菜味道一样","最近一道你最满意的菜，是怎么做出来的？试了多少次？","最近一次后厨最忙的时候，是什么情况？你们是怎么分工的？"],
+  "产品经理":["弄清用户的麻烦，决定做什么，带团队做出来","上午看用户反馈和数据、写需求；下午和工程师、设计师开会，决定先做什么、不做什么。","要说服很多人，出了问题要负责","做出来的东西，真的帮到了人","就是想点子、提需求","更多时间在弄清问题、做取舍","最近一次你决定不做某个功能，是什么功能？为什么？","最近一次和工程师或者老板意见不一样，是因为什么？最后是怎么定的？"],
+  "数据分析师":["从数据里找答案，帮别人做决定","上午取数据、清理数据；下午做分析、画图表，给同事讲结论和建议。","数据常常不干净，结论还要经得起追问","发现一个大家都没注意到的规律","数学好就行","更重要的是提对问题，把结论讲明白","最近一次你从数据里发现了别人没注意到的事，是什么？","最近一次数据和大家的想法对不上，是什么情况？最后大家信了谁？"],
+  "会计":["记账、算账、报税，让每一笔钱都有据可查","上午核对票据、记账；下午做报表、处理报销。月底和年底最忙。","要非常细，一个数字错了就要重新查","把一团乱的账理得清清楚楚","就是按计算器","更多是在核对、判断，用财务软件做账","最近一次你发现账上有问题，是什么问题？你是怎么发现的？","一年里最忙的是什么时候？最近一次那段时间，你一天是怎么过的？"],
+  "投资人":["研究公司，决定把钱投给谁","上午读行业资料、看公司的材料；下午见创业者、开投资会，讨论投还是不投。","大部分项目最后没有投，看走眼还要承担损失","很早就看好的公司，真的做大了","就是拿钱炒股","更多是在研究行业、见人、做判断","最近一次决定投一家公司，你是看中了它什么？","最近一次你看走眼了，是什么情况？你从里面学到了什么？"],
+  "药师":["审核处方、发药，告诉病人怎么用药","上午审处方、配药、发药；下午回答病人用药的问题，检查药品的存放和有效期。","一点都不能错，还要记大量的药","发现处方里的问题，避免了一次用错药","就是照着方子拿药","核心是检查药用得对不对","最近一次发现药方或者用药有问题，是什么情况？你是怎么发现的？","最近一次有人来问你用药的问题，问的是什么？你是怎么回答的？"],
+  "医生":["看病、做检查和治疗，还要写大量病历","上午出门诊或者查房；下午做手术、写病历、和家属沟通，轮到的话还要值夜班。","要学很多年，值班多，压力大","看着病人好起来出院","主要时间在手术台上","很多时间在问诊、写病历和沟通","最近一次觉得这份工作值得，是因为什么事？（不用说病人名字）","最近一次值夜班或者遇到急诊，是什么情况？那天你是怎么撑下来的？"],
+  "心理咨询师":["倾听来访者，陪他们理清问题、找到办法","一天约见几位来访者，每次一个小时左右；其余时间写记录、学习，也找督导讨论自己的个案。","要长期听别人的难过事，还要照顾好自己","一个人慢慢走出了困境","就是陪人聊天、给建议","更多是倾听和提问，帮对方自己找到答案","最近一次觉得帮到了来找你的人，是什么时候？你是怎么知道的？（不用说是谁）","听了很多别人的难过事，最近一次你自己是怎么调整的？"],
+  "销售":["找到有需要的客户，帮他们买到合适的东西","上午打电话、发消息约客户；下午见客户、介绍产品、谈价格，晚上整理客户记录。","经常被拒绝，业绩压力大","签下一个很难谈的客户","就是能说会道","更重要的是听懂客户要什么","最近一次签下一个很难签的客户，是怎么做到的？关键是哪一步？","最近一次被客户拒绝，是什么情况？被拒绝以后你做了什么？"],
+  "护士":["照顾病人：打针、发药、观察病情","轮班。一个班里要给病人打针、换药、量体温血压，观察病情变化，有情况马上告诉医生。","一直站着、走着，还要上夜班","病人出院前说一声谢谢","只是听医生的去打针","要自己判断病情变化，很多危险是护士先发现的","最近一次让你印象很深的病人或家属，是什么事？你当时怎么做的？（不用说名字）","最近一个特别忙的班，是什么情况？你先做了哪件事？为什么？"],
+  "社工":["帮遇到困难的人和家庭，找到能用的帮助","上午家访，或者在社区接待居民；下午写个案记录，联系医院、学校、街道一起想办法。","很多问题不是一下子能解决的","一个家庭的情况真的变好了","就是做志愿者","是一份要专业训练、要考证的工作","最近一次帮到一个人或者一个家庭，是什么事？（不用说是谁）","最近一次觉得很无力，是什么情况？后来怎么做的？"],
+  "创业者":["从一个想法开始，找人、找钱，把公司做起来","没有固定的一天：上午可能在见客户，下午面试、开会，晚上还在改产品。","大部分事要自己扛，失败的可能也很大","从零做出一个有人愿意买的东西","当老板，时间自由","常常比上班更忙","最近一次觉得公司往前走了一大步，是因为什么事？","最近一次觉得快撑不下去，是因为什么？后来是怎么过来的？"],
+  "公务员":["在政府部门做具体的公共事务","上午处理文件、接待来办事的人；下午开会、下去调研，和别的部门协调。","流程多，要和很多部门配合","一件事办成了，很多人受益","每天喝茶看报纸","很多岗位很忙，基层要直接面对群众","你最近在忙的一件事，是在帮谁解决什么问题？","最近一次需要好几个部门一起配合，是什么事？最后是怎么推动的？"],
+  "飞行员":["驾驶飞机，安全地把乘客送到目的地","起飞前提早到岗，看天气、和机组开准备会、检查飞机；飞行中和管制员通话、盯着仪表。","作息不规律，还要定期考核和体检","从驾驶舱看到的天空","飞机都是自动驾驶","起飞、降落和特殊情况都要人来判断","最近飞的一趟航班，从到机场到落地，你都做了哪些事？","最近一次遇到天气不好或者特殊情况，你是怎么处理的？"],
+  "外贸":["把国内的产品卖到国外，或者从国外买进来","上午回国外客户的邮件；下午和工厂确认交货时间和质量，因为时差，晚上可能还要开会。","时差、语言、规则都不同，出了问题要协调好几方","自己谈成的货，发到了另一个国家","英语好就行","还要懂产品、物流和报关","最近一次和国外客户谈成一笔单，是怎么谈下来的？","最近一次因为时差、语言或者习惯不同出了问题，是什么事？"],
+  "导游":["带游客走行程、讲解，也处理路上的问题","早上清点人数、出发；白天讲解景点、安排吃饭，处理迷路、生病这些意外；晚上确认第二天的安排。","旺季几乎没有休息，要对一车人负责","把一个地方讲活了，游客听得入迷","就是带人到处玩","要记大量知识，还要随时处理意外","最近一次带团，最难忘的是什么事？","最近一次路上出了意外，你是怎么处理的？"],
+  "翻译":["把一种语言准确地转成另一种语言","做笔译，多在电脑前查资料、翻译、校对；做口译，要提前记术语，会上一边听一边翻。","专业词很多，口译时一点都不能走神","帮两个说不同语言的人谈成了一件事","外语好就能做","还要懂内容本身，比如法律、医学、机械","最近翻译的一份东西，是关于什么的？最难的是哪里？","最近一次遇到不会翻的词，你是怎么办的？"],
+  "机械工程师":["设计机器和零件，让它们造得出、用得住","上午在电脑上画三维图、算强度；下午去车间看样件，和工人讨论能不能造出来。","设计改一点，后面很多地方都要跟着改","自己设计的机器真的转起来了","整天拧螺丝","大量时间在设计、计算和测试","最近你设计的一个东西，是做什么用的？","最近一次样件出了问题，你们是怎么找到原因的？"],
+  "警察":["处理警情、调查案件，也做大量服务工作","轮班。派出所的民警要接警、出警、调解纠纷，也要走访社区、办证件这类事。","作息不规律，有时会有危险","帮人找回了丢的东西，或者走失的家人","天天抓坏人","很多时间在调解、服务和写材料","最近一次出警，处理的是什么事？到了现场你先做的是什么？（不用说具体是谁）","最近一次觉得这份工作很难，是什么时候？后来是怎么调整的？"]
+};
+
+/* ========= 状态 ========= */
+const $ = (id) => document.getElementById(id);
+const S = { interests: [], msgs: [], stage: 1, mode: "live", busy: false, done: false, card: null, fails: 0, demo: null, turns: 0 };
+const IMAP = {};
+INTERESTS.forEach(([k, act, o, c]) => { IMAP[k] = { act, o, c }; });
+
+/* ========= 首页 ========= */
+const picked = [], customs = [];
+function renderChips() {
+  const box = $("chips");
+  box.textContent = "";
+  const all = INTERESTS.map((x) => x[0]).concat(customs);
+  all.forEach((name) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = name;
+    const i = picked.indexOf(name);
+    b.setAttribute("aria-pressed", i >= 0 ? "true" : "false");
+    if (i >= 0) { const n = document.createElement("span"); n.className = "n"; n.textContent = String(i + 1); b.appendChild(n); }
+    b.addEventListener("click", () => togglePick(name));
+    box.appendChild(b);
+  });
+  $("startBtn").disabled = picked.length === 0;
+  $("startBtn").textContent = picked.length ? "选好了，开始聊（" + picked.length + "/3）" : "选好了，开始聊";
+}
+function togglePick(name) {
+  const i = picked.indexOf(name);
+  $("customHint").textContent = "";
+  if (i >= 0) picked.splice(i, 1);
+  else if (picked.length >= 3) { toast("最多选 3 个"); return; }
+  else picked.push(name);
+  renderChips();
+}
+$("customForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const v = $("customInput").value.trim();
+  if (!v) return;
+  if (!INTEREST_RE.test(v)) { $("customHint").textContent = "用 10 个字以内的中文、字母或数字写，不要标点符号。"; return; }
+  if (picked.includes(v)) { $("customInput").value = ""; return; }
+  if (picked.length >= 3) { $("customHint").textContent = "最多选 3 个，先去掉一个再加。"; return; }
+  if (!customs.includes(v) && !IMAP[v]) customs.push(v);
+  picked.push(v); $("customInput").value = ""; $("customHint").textContent = ""; renderChips();
+});
+$("startBtn").addEventListener("click", () => { if (picked.length) startChat(picked.slice()); });
+
+function heroBg() {
+  const names = Object.keys(CAREERS);
+  const box = $("heroBg");
+  for (let r = 0; r < 16; r++) {
+    const line = document.createElement("span");
+    let s = "";
+    for (let k = 0; k < 9; k++) s += names[(r * 5 + k * 7) % names.length] + "　　";
+    line.textContent = s;
+    line.style.marginLeft = (-(r % 4) * 34) + "px";
+    box.appendChild(line);
+  }
+}
+
+/* ========= 对话 ========= */
+function show(id) {
+  ["home", "chat", "card"].forEach((x) => $(x).classList.toggle("on", x === id));
+  window.scrollTo(0, 0);
+}
+function setStage(n) {
+  S.stage = n;
+  [...$("steps").children].forEach((el, i) => {
+    el.classList.toggle("done", i + 1 < n);
+    el.classList.toggle("now", i + 1 === n);
+  });
+}
+function addMsg(role, text, extra) {
+  const d = document.createElement("div");
+  d.className = "msg " + role + (extra && extra.safe ? " safe" : "");
+  if (role === "a" && !$("log").querySelector(".msg.a")) {
+    const w = document.createElement("span"); w.className = "who"; w.textContent = "向导"; d.appendChild(w);
+  }
+  d.appendChild(document.createTextNode(text));
+  if (extra && extra.safe) {
+    const br = document.createElement("br"); d.appendChild(br);
+    const a = document.createElement("a"); a.href = "tel:12355"; a.textContent = "拨打 12355"; d.appendChild(a);
+  }
+  $("log").appendChild(d);
+  scrollDown();
+  return d;
+}
+function typing(on) {
+  const old = $("log").querySelector(".typing");
+  if (old) old.remove();
+  if (on) {
+    const t = document.createElement("div"); t.className = "typing"; t.setAttribute("aria-label", "向导正在输入");
+    t.innerHTML = "<i></i><i></i><i></i>";
+    $("log").appendChild(t); scrollDown();
+  }
+}
+function scrollDown() { requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })); }
+function setOptions(list, special) {
+  const box = $("opts"); box.textContent = "";
+  (list || []).forEach((o) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt"; b.textContent = o;
+    b.addEventListener("click", () => send(o));
+    box.appendChild(b);
+  });
+  (special || []).forEach(([label, fn, go]) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "opt" + (go ? " go" : ""); b.textContent = label;
+    b.addEventListener("click", fn); box.appendChild(b);
+  });
+}
+function lockInput(locked) {
+  $("text").disabled = locked; $("sendBtn").disabled = locked;
+  $("wrapBtn").disabled = locked;
+}
+function updateWrap() {
+  $("wrapBtn").hidden = S.done || S.stage < 2 || S.turns < 2;
+}
+
+function startChat(interests, forceDemo) {
+  Object.assign(S, { interests, msgs: [], stage: 1, busy: false, done: false, card: null, fails: 0, demo: null, turns: 0 });
+  S.mode = API_URL && !forceDemo ? "live" : "demo";
+  $("log").textContent = ""; setOptions([]);
+  $("chatInterests").textContent = "我喜欢：" + interests.join("、");
+  $("modeNote").hidden = S.mode !== "demo";
+  $("composer").hidden = false; lockInput(false);
+  setStage(1); updateWrap(); show("chat");
+  history.replaceState(null, "", "#chat");
+  turn(null);
+}
+
+async function send(text) {
+  if (S.busy || S.done) return;
+  text = String(text || "").trim().slice(0, 200);
+  if (!text) return;
+  setOptions([]);
+  addMsg("u", text === END_REQUEST ? "聊到这里，帮我整理探索卡" : text);
+  $("text").value = ""; autosize();
+  if (SAFETY_RE.test(text)) { safetyStop(); return; }
+  S.msgs.push({ role: "user", content: text });
+  S.turns++;
+  await turn(text);
+}
+
+function safetyStop() {
+  S.done = true;
+  addMsg("a", SAFETY_REPLY, { safe: true });
+  $("composer").hidden = true;
+  setOptions([], [["回到首页", goHome]]);
+}
+
+async function turn(userText) {
+  S.busy = true; lockInput(true); typing(true);
+  let res = null;
+  try {
+    if (S.mode === "live") res = await callLive();
+    else { res = demoNext(userText); await wait(Math.min(1500, 500 + res.reply.length * 6)); }
+    S.fails = 0;
+  } catch (err) {
+    typing(false); S.busy = false; lockInput(false);
+    handleError(err, userText);
+    return;
+  }
+  typing(false); S.busy = false; lockInput(false);
+  render(res);
+}
+
+function render(res) {
+  if (res.safety) { safetyStop(); return; }
+  S.msgs.push({ role: "assistant", content: res.reply });
+  addMsg("a", res.reply);
+  if (res.stage >= 1 && res.stage <= 4) setStage(res.stage);
+  if (res.done && res.card) {
+    S.done = true; S.card = res.card; setStage(4);
+    try { sessionStorage.setItem("guide-card", JSON.stringify(res.card)); } catch (e) {}
+    $("composer").hidden = true;
+    setOptions([], [["查看我的探索卡", openCard, true], ["换个兴趣再聊", goHome]]);
+  } else {
+    setOptions(res.options);
+    if (S.turns >= MAX_TURNS) { send(END_REQUEST); return; }
+  }
+  updateWrap();
+}
+
+function handleError(err, userText) {
+  const st = err && err.status;
+  const noMsgYet = S.msgs.length === 0;
+  if (!st || st === 503 || st === 403 || st === 404) {
+    if (noMsgYet) {
+      S.mode = "demo"; $("modeNote").hidden = false;
+      addMsg("sys", "AI 现在连不上，先用提前写好的示例版聊。");
+      turn(null); return;
+    }
+  }
+  if (userText !== null) { S.msgs.pop(); S.turns--; }
+  let tip = "这次没连上。";
+  if (st === 429) tip = "现在用的人有点多，等几秒再试。";
+  else if (st === 502) tip = "AI 这次没答好。";
+  else if (st === 400) tip = "这句话没发出去，换个说法试试。";
+  addMsg("sys", tip);
+  S.fails++;
+  const special = [];
+  if (st !== 400) special.push(["再试一次", () => { setOptions([]); if (userText !== null) { S.msgs.push({ role: "user", content: userText }); S.turns++; } turn(userText); }, true]);
+  if (S.fails >= 2) special.push(["换成示例版，重新开始", () => startChat(S.interests.slice(), true)]);
+  setOptions([], special);
+}
+
+async function callLive() {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 30000);
+  try {
+    const r = await fetch(API_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ interests: S.interests, messages: S.msgs }), signal: ctl.signal, credentials: "omit"
+    });
+    if (r.status !== 200) { const e = new Error("http " + r.status); e.status = r.status; throw e; }
+    const j = await r.json();
+    if (!j || typeof j.reply !== "string") { const e = new Error("bad"); e.status = 502; throw e; }
+    return j;
+  } finally { clearTimeout(timer); }
+}
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* ========= 离线示例版：按同样的四段对话，用提前写好的内容回答 ========= */
+function demoNext(text) {
+  const d = S.demo;
+  if (!d) {
+    S.demo = { step: 1, flavor: null, list: [], seen: [], focus: null };
+    const first = S.interests[0], it = IMAP[first];
+    const act = it ? it.act : "「" + first + "」";
+    const which = S.interests.length > 1 ? "先说你选的第一个：" : "";
+    return { reply: "你选了「" + S.interests.join("」「") + "」。" + which + "你最近一次" + act + "，是什么时候？做了什么？", options: (it ? it.o : ["最近刚做过", "有一阵子没做了"]).concat(["记不太清了"]), stage: 1 };
+  }
+  if (text === END_REQUEST) return demoCard();
+  if (d.step === 1) {
+    d.step = 2;
+    const ack = text === "记不太清了" ? "没关系。" : (text.length >= 12 ? "谢谢你说得这么具体。" : "明白了。");
+    return { reply: ack + "再问一个：做这件事的时候，你最享受的是哪一部分？", options: FLAVORS.map((f) => f[0]), stage: 1 };
+  }
+  if (d.step === 2) {
+    d.flavor = guessFlavor(text);
+    d.list = pickCareers(d.flavor);
+    d.step = 3;
+    return listReply("和你说的有关的工作很多，先看这 3 个：", d.list);
+  }
+  if (d.step === 3) {
+    const left = d.list.filter((n) => !d.seen.includes(n));
+    const name = d.list.find((n) => text.includes(n)) || left[0] || d.list[0];
+    d.focus = name; if (!d.seen.includes(name)) d.seen.push(name);
+    d.step = 4;
+    return { reply: name + "普通的一天，一般是这样：" + C(name)[1] + "\n你猜，做" + name + "最辛苦的是什么？", options: ["时间长、很累", "压力大", "要和很多人打交道", "猜不到"], stage: 3 };
+  }
+  if (d.step === 4) {
+    d.step = 5;
+    const c = C(d.focus);
+    return { reply: "一般来说，最辛苦的是：" + c[2] + "。\n最有意思的是：" + c[3] + "。\n这和你想的一样吗？", options: ["比我想的辛苦", "比我想的有意思", "和我想的差不多", "想换一个职业看看"], stage: 3 };
+  }
+  if (d.step === 5) {
+    if (/换|别的|另一个/.test(text)) return switchCareer();
+    d.step = 6;
+    const c = C(d.focus);
+    return { reply: "还有一个常见的误会：很多人以为" + d.focus + c[4] + "，其实" + c[5] + "。\n这些只是一般情况。真实的样子，要问正在做这份工作的人。要不要把今天聊的，整理成一张探索卡？", options: ["整理探索卡", "再了解一个职业"], stage: 3 };
+  }
+  if (d.step === 6) {
+    if (/再了解|换|别的|另一个/.test(text)) return switchCareer();
+    return demoCard();
+  }
+  return demoCard();
+}
+function C(name) { return CAREERS[name] || CAREERS["设计师"]; }
+function listReply(head, list) {
+  const marks = ["①", "②", "③"];
+  const lines = list.map((n, i) => marks[i] + " " + n + "：" + C(n)[0]);
+  return { reply: head + "\n" + lines.join("\n") + "\n你想先了解哪一个？", options: list.slice(), stage: 2 };
+}
+function switchCareer() {
+  const d = S.demo;
+  const left = d.list.filter((n) => !d.seen.includes(n));
+  if (!left.length) { d.step = 6; return { reply: "这 3 个都看过了。要不要把今天聊的整理成探索卡，再去问一位真人？", options: ["整理探索卡"], stage: 3 }; }
+  d.step = 3;
+  const r = listReply("好。还剩这几个：", left);
+  r.reply = r.reply.replace("①", "·").replace("②", "·");
+  r.stage = 2;
+  return r;
+}
+function guessFlavor(t) {
+  for (const [label, f] of FLAVORS) if (t === label) return f;
+  if (/想|点子|主意|创意|设计/.test(t)) return "idea";
+  if (/朋友|一起|帮|别人|大家|聊/.test(t)) return "people";
+  if (/为什么|弄明白|研究|道理|算|规律/.test(t)) return "think";
+  return "make";
+}
+function pickCareers(flavor) {
+  const pools = S.interests.map((k) => (IMAP[k] ? IMAP[k].c : DEFAULT_POOL));
+  const out = [];
+  for (const pool of pools) { const m = pool.find(([n, f]) => f === flavor && !out.includes(n)); if (m) { out.push(m[0]); break; } }
+  for (let pass = 0; pass < 6 && out.length < 3; pass++) {
+    for (const pool of pools) {
+      const m = pool.find(([n]) => !out.includes(n));
+      if (m) out.push(m[0]);
+      if (out.length >= 3) break;
+    }
+  }
+  for (const [n] of DEFAULT_POOL) if (out.length < 3 && !out.includes(n)) out.push(n);
+  return out.slice(0, 3);
+}
+function demoCard() {
+  const d = S.demo;
+  if (!d.list.length) d.list = pickCareers(d.flavor || "make");
+  const focus = d.focus || d.list[0];
+  const c = C(focus);
+  return {
+    reply: "整理好了。拿着这张卡，去问一位正在做" + focus + "的人吧。可以先问问爸妈，认不认识做这一行的人，请他们帮你约。",
+    options: [], stage: 4, done: true, safety: false,
+    card: {
+      interests: S.interests.slice(), careers: d.list.slice(), focus,
+      learned: focus + c[5] + "。",
+      opening: "您好，我在了解「" + focus + "」这份工作。想请您花 15 分钟，讲讲您真实的一天，可以吗？",
+      questions: [BASE_Q, c[6], c[7]]
+    }
+  };
+}
+
+/* ========= 探索卡 ========= */
+function openCard() {
+  const c = S.card; if (!c) return;
+  $("c-focus").textContent = c.focus || "";
+  $("c-from").textContent = "从「" + (c.interests || S.interests).join("」「") + "」出发";
+  const tags = $("c-careers"); tags.textContent = "";
+  (c.careers || []).forEach((n) => { const t = document.createElement("span"); t.className = "tag" + (n === c.focus ? " hl" : ""); t.textContent = n; tags.appendChild(t); });
+  $("c-learned").textContent = c.learned || "";
+  $("c-opening").textContent = c.opening || "";
+  const qs = $("c-qs"); qs.textContent = "";
+  (c.questions || []).forEach((q) => { const li = document.createElement("li"); li.textContent = q; qs.appendChild(li); });
+  show("card"); history.replaceState(null, "", "#card");
+}
+function cardText(c) {
+  const lines = ["【我的职业探索卡】", "我喜欢：" + (c.interests || []).join("、"), "认识了：" + (c.careers || []).join("、"), "最想了解：" + c.focus];
+  if (c.learned) lines.push("我学到的一点：" + c.learned);
+  lines.push("", "去问一位真人，可以这样开口：", c.opening, "", "想问的 3 个问题：");
+  (c.questions || []).forEach((q, i) => lines.push((i + 1) + ". " + q));
+  lines.push("", "（AI 职业向导整理。讲的是一般情况，真实的样子以对方说的为准。）");
+  return lines.join("\n");
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {
+    const ta = document.createElement("textarea"); ta.value = t; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {}
+    ta.remove(); return ok;
+  }
+}
+$("copyBtn").addEventListener("click", async () => { if (S.card) toast(await copyText(cardText(S.card)) ? "已复制，可以粘贴到微信" : "没复制成功，可以直接截图"); });
+$("againBtn").addEventListener("click", goHome);
+$("cardBack").addEventListener("click", () => { show("chat"); history.replaceState(null, "", "#chat"); });
+
+/* ========= 其他 ========= */
+function goHome() { show("home"); history.replaceState(null, "", location.pathname + location.search); }
+$("backBtn").addEventListener("click", () => { if (S.done || S.msgs.length < 2 || confirm("回到首页，这次的对话就不保留了。确定吗？")) goHome(); });
+$("wrapBtn").addEventListener("click", () => send(END_REQUEST));
+$("sendForm").addEventListener("submit", (e) => { e.preventDefault(); send($("text").value); });
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send($("text").value); } });
+function autosize() { const t = $("text"); t.style.height = "auto"; t.style.height = Math.min(120, t.scrollHeight) + "px"; }
+$("text").addEventListener("input", autosize);
+let toastTimer = 0;
+function toast(t) { const el = $("toast"); el.textContent = t; el.classList.add("on"); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("on"), 1800); }
+
+heroBg(); renderChips();
+if (location.hash) {
+  let saved = null; try { saved = JSON.parse(sessionStorage.getItem("guide-card") || "null"); } catch (e) {}
+  if (location.hash === "#card" && saved && saved.focus) { S.card = saved; S.interests = saved.interests || []; openCard(); }
+  else history.replaceState(null, "", location.pathname + location.search);
+}
+</script>
+</body>
+</html>
