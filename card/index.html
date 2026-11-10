@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>职业访谈卡</title>
+<meta name="description" content="选一个职业，拿到一段开口的话和 6 个问题，去问身边正在做这份工作的大人。">
+<style>
+:root{--navy:#1F4E79;--ink:#1f2630;--text:#343b46;--sub:#5f6773;--faint:#8f97a1;--line:#e3e8ef;--tint:#e9f0f7;--bg:#f7f6f2;--card:#fff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Noto Sans SC",sans-serif;font-size:17px;line-height:1.6}
+.wrap{max-width:560px;margin:0 auto;padding:24px 18px calc(112px + env(safe-area-inset-bottom))}
+header h1{font-size:28px;line-height:1.3;color:var(--ink);margin:4px 0 8px}
+header p{margin:0;color:var(--sub);font-size:16px}
+h2{font-size:18px;line-height:1.4;color:var(--ink);margin:0 0 12px}
+.sec{margin-top:26px}
+.grp{margin-bottom:16px}
+.gl{font-size:13px;color:var(--faint);margin-bottom:8px;letter-spacing:.04em}
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chip{appearance:none;-webkit-appearance:none;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:11px 2px;font:inherit;font-size:16px;line-height:1.3;color:var(--text);cursor:pointer}
+.chip.on{border-color:var(--navy);background:var(--tint);color:var(--navy);font-weight:700}
+.field{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px 14px;font:inherit;font-size:16px;background:#fff;color:var(--ink)}
+.field:focus{outline:2px solid #b9cfe6;border-color:var(--navy)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.row h2{margin:0}
+.who{display:flex;align-items:center;gap:10px;margin:14px 0 10px;font-size:15px;color:var(--sub)}
+.who .field{width:10em;padding:8px 10px;font-size:15px}
+#openText{display:block;width:100%;border:0;resize:none;font:inherit;color:var(--ink);background:var(--tint);border-radius:12px;padding:12px 14px;line-height:1.7}
+ol.qs{margin:0;padding:0;list-style:none;counter-reset:q}
+ol.qs li{counter-increment:q;position:relative;padding:14px 0 14px 40px;border-bottom:1px solid var(--line)}
+ol.qs li:last-child{border-bottom:0;padding-bottom:4px}
+ol.qs li::before{content:counter(q);position:absolute;left:0;top:15px;width:28px;height:28px;border-radius:50%;background:var(--tint);color:var(--navy);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center}
+.q{color:var(--ink);font-weight:600}
+.f{display:block;color:var(--faint);font-size:14px;margin-top:4px}
+.tag{display:inline-block;font-size:12px;font-weight:400;color:var(--sub);background:#eef0f3;border-radius:6px;padding:2px 8px;margin-left:8px;vertical-align:2px}
+.tips{display:grid;gap:10px;font-size:15px;color:var(--sub)}
+.tips b{color:var(--ink)}
+.after{margin:0;padding-left:22px;font-size:16px}
+.after li{margin-bottom:4px}
+.small{appearance:none;-webkit-appearance:none;border:1px solid #c9d9ea;background:#fff;color:var(--navy);border-radius:10px;padding:7px 12px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn{appearance:none;-webkit-appearance:none;flex:1;border:0;border-radius:14px;background:var(--navy);color:#fff;font:inherit;font-size:17px;font-weight:700;padding:14px 16px;cursor:pointer}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid #c9d9ea}
+.btn:disabled{opacity:.4}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;background:rgba(247,246,242,.96);border-top:1px solid var(--line);padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+.bar .in{max-width:560px;margin:0 auto;display:flex;gap:10px}
+.note{font-size:13px;color:var(--faint);margin-top:22px;text-align:center;line-height:1.7}
+.toast{position:fixed;left:50%;bottom:calc(92px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9;background:rgba(20,25,32,.92);color:#fff;padding:10px 18px;border-radius:999px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<main class="wrap" id="home">
+  <header>
+    <h1>职业访谈卡</h1>
+    <p>想了解一份工作，最好的办法，是去问正在做这份工作的人。</p>
+  </header>
+  <section class="sec">
+    <h2>你想了解哪个职业？</h2>
+    <div id="groups"></div>
+    <input class="field" id="customJob" maxlength="16" placeholder="不在上面？自己输入一个职业" autocomplete="off" enterkeyhint="done">
+  </section>
+  <p class="note">不需要登录，不保存你填写的任何内容。<br>少年 AI 创业营 · 分享活动演示</p>
+</main>
+
+<main class="wrap hidden" id="cardView">
+  <header>
+    <h1 id="cardTitle">访谈卡</h1>
+    <p>先发一段开口的话，约对方聊 15 分钟，再按下面的问题聊。</p>
+  </header>
+  <section class="card">
+    <div class="row"><h2>开口这样说</h2><button class="small" id="copyOpen" type="button">复制这段话</button></div>
+    <div class="who"><label for="who">称呼</label><input class="field" id="who" maxlength="8" placeholder="比如：王阿姨" autocomplete="off"></div>
+    <textarea id="openText" rows="5" aria-label="开口的话"></textarea>
+  </section>
+  <section class="card">
+    <h2>6 个问题<span class="tag" id="srcTag"></span></h2>
+    <ol class="qs" id="qs"></ol>
+  </section>
+  <section class="card">
+    <h2>聊的时候记住三条</h2>
+    <div class="tips">
+      <div><b>问发生过的事。</b>多用“最近一次”“上一次”，少问“你觉得”“会不会”。</div>
+      <div><b>少说，多听。</b>对方停下来，先等两秒，再问一句“后来呢？”</div>
+      <div><b>记下原话。</b>哪句话让你意外，就原样写下来。</div>
+    </div>
+  </section>
+  <section class="card">
+    <h2>聊完以后问问自己</h2>
+    <ol class="after">
+      <li>最让我意外的一件事是什么？</li>
+      <li>我还想继续了解这一行吗？（1 到 5 分）</li>
+      <li>下一个想去问谁？</li>
+    </ol>
+  </section>
+  <p class="note">不需要登录，不保存你填写的任何内容。<br>少年 AI 创业营 · 分享活动演示</p>
+</main>
+
+<div class="bar">
+  <div class="in" id="barHome"><button class="btn" id="go" type="button" disabled>生成访谈卡</button></div>
+  <div class="in hidden" id="barCard"><button class="btn ghost" id="back" type="button">换一个职业</button><button class="btn" id="copyAll" type="button">复制全部</button></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  // 可选：实时生成问题的后台地址。留空时不调用任何大模型，不在列表里的职业用通用问题。
+  var API_URL = "";
+
+  var GROUPS = [
+    ["医疗与健康", ["医生","护士","药师","心理咨询师","兽医"]],
+    ["教育与研究", ["老师","大学老师","科研人员"]],
+    ["科技与互联网", ["程序员","产品经理","设计师","数据分析师","硬件工程师","游戏策划"]],
+    ["商业与金融", ["销售","市场营销","会计","银行职员","投资人","创业者","外贸","电商运营"]],
+    ["法律与公共服务", ["律师","警察","公务员","消防员"]],
+    ["媒体与创意", ["记者","视频博主","摄影师","建筑师"]],
+    ["生活与服务", ["厨师","开店的老板","健身教练"]],
+    ["制造与交通", ["工厂管理","采购与供应链","飞行员"]]
+  ];
+
+  // 每个职业两道专属问题：[有成就感的时刻, 追问, 难办的时刻, 追问]。由 AI 提前生成，人工审核后写入。
+  var JOBS = {
+    "医生":["最近一次觉得“这份工作值得”，是因为什么事？（不用说病人名字）","当时你是怎么做的？","最近一次值夜班或者遇到急诊，是什么情况？","那天你是怎么撑下来的？"],
+    "护士":["最近一次让你印象很深的病人或家属，是什么事？（不用说名字）","你当时怎么做的？","最近一个特别忙的班，是什么情况？你先做了哪件事？","为什么先做那件？"],
+    "药师":["最近一次发现药方或者用药有问题，是什么情况？","你是怎么发现的？","最近一次有人来问你用药的问题，问的是什么？","你是怎么回答的？"],
+    "心理咨询师":["最近一次觉得帮到了来找你的人，是什么时候？（不用说是谁、什么事）","你是怎么知道帮到了的？","听了很多别人的难过事，最近一次你自己是怎么调整的？","这个办法是怎么学会的？"],
+    "兽医":["最近一次救回一只动物，是什么情况？","当时最难的是哪一步？","最近一次和宠物主人沟通很难，是因为什么？","后来是怎么说通的？"],
+    "老师":["最近一节你觉得上得很好的课，是讲什么的？","你是怎么准备的？","最近一次遇到很难教或很难管的情况，是什么事？（不用说名字）","后来是怎么处理的？"],
+    "大学老师":["你最近在研究或者在教的东西，能用我听得懂的话讲讲吗？","这件事有什么用？","最近一次研究卡住了，是卡在哪里？","后来是怎么往前推的？"],
+    "科研人员":["最近一次实验或研究有了新发现，是什么时候？","那一刻你在做什么？","最近一次做了很久却失败了，是什么事？","失败以后你做了什么？"],
+    "程序员":["最近一次你写的功能上线了，是做什么用的？","你是怎么知道有人在用的？","最近一次遇到很难查的 bug，花了多久？最后是什么原因？","你是怎么找到的？"],
+    "产品经理":["最近一次你决定“不做”某个功能，是什么功能？为什么？","后来证明对吗？","最近一次和工程师或者老板意见不一样，是因为什么？","最后是怎么定的？"],
+    "设计师":["最近一个你最满意的设计，是做什么的？","前前后后改了多少版？","最近一次别人不认可你的设计，是什么情况？","后来是怎么改的？"],
+    "数据分析师":["最近一次你从数据里发现了别人没注意到的事，是什么？","你是怎么发现的？","最近一次数据和大家的想法对不上，是什么情况？","最后大家信了谁？"],
+    "硬件工程师":["最近一次你做的东西第一次做出样品，是什么东西？","拿到样品时你在想什么？","最近一次样品出了问题，是什么问题？","你们是怎么找到原因的？"],
+    "游戏策划":["最近一个你设计的玩法上线了，玩家是什么反应？","你是怎么知道的？","最近一次你的想法被否掉了，是因为什么？","后来是怎么改的？"],
+    "销售":["最近一次签下一个很难签的客户，是怎么做到的？","关键是哪一步？","最近一次被客户拒绝，是什么情况？","被拒绝以后你做了什么？"],
+    "市场营销":["最近一次你做的活动或者广告效果很好，是什么？","你是怎么知道效果好的？","最近一次花了钱效果却不好，是什么情况？","后来是怎么调整的？"],
+    "会计":["最近一次你发现账上有问题，是什么问题？","你是怎么发现的？","一年里最忙的是什么时候？最近一次那段时间，你一天是怎么过的？","为什么那段时间最忙？"],
+    "银行职员":["最近一次帮客户解决了一个麻烦，是什么事？","你是怎么解决的？","最近一次遇到可能是诈骗的情况，是怎么发现的？","后来是怎么处理的？"],
+    "投资人":["最近一次决定投一家公司，你是看中了它什么？","你见了创始人几次？","最近一次你看走眼了，是什么情况？","你从里面学到了什么？"],
+    "创业者":["最近一次觉得公司往前走了一大步，是因为什么事？","那件事是怎么做成的？","最近一次觉得快撑不下去，是因为什么？","后来是怎么过来的？"],
+    "外贸":["最近一次和国外客户谈成一笔单，是怎么谈下来的？","你们用什么语言沟通？","最近一次因为时差、语言或者习惯不同出了问题，是什么事？","后来是怎么解决的？"],
+    "电商运营":["最近一次你负责的商品卖得特别好，你觉得是做对了什么？","你是怎么判断的？","最近一次大促或者活动出了问题，是什么问题？","当时是怎么补救的？"],
+    "律师":["最近一个让你印象很深的案子，是什么类型的？（不用说当事人）","最关键的是哪一步？","最近一次开庭或者谈判的前一天，你在做什么？","一共准备了多久？"],
+    "警察":["最近一次出警，处理的是什么事？（不用说具体是谁）","到了现场你先做的是什么？","最近一次觉得这份工作很难，是什么时候？","后来是怎么调整的？"],
+    "公务员":["你最近在忙的一件事，是在帮谁解决什么问题？","能说一个具体的例子吗？","最近一次需要好几个部门一起配合，是什么事？","最后是怎么推动的？"],
+    "消防员":["最近一次出警，是什么情况？","出发前那几分钟你们在做什么？","没有出警的时候，你们一天是怎么训练的？","哪一项训练最难？"],
+    "记者":["你最近写的一篇稿子，是怎么找到这个题目的？","你采访了几个人？","最近一次采访很不顺，是什么情况？","后来是怎么拿到想要的信息的？"],
+    "视频博主":["最近一条数据最好的视频，你觉得是做对了什么？","拍和剪一共花了多久？","最近一次一条视频没人看，你是怎么想的？","下一条你改了什么？"],
+    "摄影师":["最近拍到的一张你最满意的照片，是怎么拍到的？","等了多久？","最近一次客户对照片不满意，是什么情况？","后来是怎么处理的？"],
+    "建筑师":["最近一个你参与设计的建筑，现在建成什么样了？","从画图到建成用了多久？","最近一次设计要大改，是因为什么？","改的时候你最舍不得的是什么？"],
+    "厨师":["最近一道你最满意的菜，是怎么做出来的？","试了多少次？","最近一次后厨最忙的时候，是什么情况？","那时候你们是怎么分工的？"],
+    "开店的老板":["最近一次店里生意特别好，是因为什么？","你是怎么发现的？","最近一次遇到难办的顾客，或者亏了钱，是什么情况？","后来是怎么处理的？"],
+    "健身教练":["最近一个学员练出了明显的变化，你是怎么带他的？","他最难坚持的是哪一段？","最近一次学员不想练了，你是怎么做的？","后来他回来了吗？"],
+    "工厂管理":["最近一次生产线的效率提高了，是改了什么？","这个办法是谁想到的？","最近一次生产线出了问题，是什么问题？","你们花了多久解决的？"],
+    "采购与供应链":["最近一次你帮公司省下一笔钱，是怎么做到的？","和供应商谈了几次？","最近一次货没按时到，是什么情况？","后来是怎么补救的？"],
+    "飞行员":["最近飞的一趟航班，从到机场到落地，你都做了哪些事？","起飞前要检查什么？","最近一次遇到天气不好或者特殊情况，你是怎么处理的？","这种情况平时是怎么练的？"]
+  };
+
+  // 通用的 6 个问题：[问题, 追问]。专属问题会替换第 2、3 题。
+  var BASE = [
+    ["你最近一个工作日，从早到晚都做了哪些事？","能举个例子吗？"],
+    ["最近一次觉得这份工作有意思，是什么时候？发生了什么？","当时你是怎么做的？"],
+    ["最近一次觉得特别累或者想放弃，是什么时候？后来怎么办的？","后来呢？"],
+    ["你当初是怎么走进这一行的？如果重新选，还会选吗？","为什么？"],
+    ["学校里学的东西，哪些在工作里用得上？哪些是工作以后才学会的？","能说一门具体的课吗？"],
+    ["如果我对这一行感兴趣，现在可以先做点什么试试？","去哪里可以试？"]
+  ];
+  var AFTER = ["最让我意外的一件事是什么？","我还想继续了解这一行吗？（1 到 5 分）","下一个想去问谁？"];
+
+  var $ = function(id){ return document.getElementById(id); };
+  var selected = "", edited = false, current = null, reqId = 0;
+
+  function clean(s){ return String(s || "").replace(/[<>"'`\\]/g, "").replace(/\s+/g, " ").trim().slice(0, 16); }
+
+  function buildGroups(){
+    var box = $("groups");
+    GROUPS.forEach(function(g){
+      var grp = document.createElement("div"); grp.className = "grp";
+      var gl = document.createElement("div"); gl.className = "gl"; gl.textContent = g[0]; grp.appendChild(gl);
+      var chips = document.createElement("div"); chips.className = "chips";
+      g[1].forEach(function(job){
+        var b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = job;
+        b.addEventListener("click", function(){ $("customJob").value = ""; select(job); });
+        chips.appendChild(b);
+      });
+      grp.appendChild(chips); box.appendChild(grp);
+    });
+  }
+
+  function select(job){
+    selected = job;
+    [].forEach.call(document.querySelectorAll(".chip"), function(c){ c.classList.toggle("on", c.textContent === job); });
+    $("go").disabled = !selected;
+  }
+
+  function questionsFor(job){
+    var q = BASE.map(function(x){ return x.slice(); });
+    var s = JOBS[job];
+    if (s) { q[1] = [s[0], s[1]]; q[2] = [s[2], s[3]]; }
+    return q;
+  }
+
+  function opening(job){
+    var who = clean($("who").value).slice(0, 8) || "（称呼）";
+    return who + "，我最近在想以后做什么，想了解一下" + job + "这份工作。这周能不能找 15 分钟，跟我聊聊你平时上班都做些什么？我准备了几个问题。";
+  }
+
+  function fitOpen(){ var t = $("openText"); t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; }
+
+  function renderQuestions(list){
+    var ol = $("qs"); ol.textContent = "";
+    list.forEach(function(x){
+      var li = document.createElement("li");
+      var q = document.createElement("span"); q.className = "q"; q.textContent = x[0];
+      var f = document.createElement("span"); f.className = "f"; f.textContent = "追问：" + x[1];
+      li.appendChild(q); li.appendChild(f); ol.appendChild(li);
+    });
+  }
+
+  function show(view){
+    var card = view === "card";
+    $("home").classList.toggle("hidden", card); $("cardView").classList.toggle("hidden", !card);
+    $("barHome").classList.toggle("hidden", card); $("barCard").classList.toggle("hidden", !card);
+    window.scrollTo(0, 0);
+  }
+
+  function openCard(job){
+    job = clean(job); if (!job) return;
+    current = { job: job, q: questionsFor(job) };
+    edited = false;
+    $("cardTitle").textContent = "访谈卡 · " + job;
+    $("openText").value = opening(job);
+    $("srcTag").textContent = JOBS[job] ? "这个职业的专属问题" : "通用问题";
+    renderQuestions(current.q);
+    show("card");
+    fitOpen();
+    if (!JOBS[job] && API_URL) fetchQuestions(job);
+  }
+
+  function fetchQuestions(job){
+    var my = ++reqId, done = false;
+    $("srcTag").textContent = "AI 正在为这个职业准备问题…";
+    var timer = setTimeout(function(){ if (!done) { done = true; if (my === reqId) $("srcTag").textContent = "通用问题"; } }, 8000);
+    fetch(API_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job: job }) })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(data){
+        if (done || my !== reqId || !current || current.job !== job) return;
+        done = true; clearTimeout(timer);
+        var ok = data && Array.isArray(data.q) && data.q.length === 2 && data.q.every(function(p){
+          return Array.isArray(p) && p.length === 2 && p.every(function(t){ return typeof t === "string" && t.length > 1 && t.length < 80 && !/[<>]|https?:/i.test(t); });
+        });
+        if (!ok) { $("srcTag").textContent = "通用问题"; return; }
+        current.q[1] = data.q[0]; current.q[2] = data.q[1];
+        renderQuestions(current.q);
+        $("srcTag").textContent = "AI 刚为这个职业生成";
+      })
+      .catch(function(){ if (!done && my === reqId) { done = true; clearTimeout(timer); $("srcTag").textContent = "通用问题"; } });
+  }
+
+  function allText(){
+    var lines = ["访谈卡 · " + current.job, "", "开口这样说：", $("openText").value, "", "6 个问题："];
+    current.q.forEach(function(x, i){ lines.push((i + 1) + ". " + x[0] + "（追问：" + x[1] + "）"); });
+    lines.push("", "聊完以后问问自己：");
+    AFTER.forEach(function(t, i){ lines.push((i + 1) + ". " + t); });
+    return lines.join("\n");
+  }
+
+  var toastTimer;
+  function toast(msg){
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove("show"); }, 1800);
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.top = "-1000px"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false; try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    toast(ok ? "已复制，可以粘贴到微信" : "没能自动复制，请长按文字手动复制");
+  }
+
+  function copy(text){
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(function(){ toast("已复制，可以粘贴到微信"); }, function(){ fallbackCopy(text); });
+    } else { fallbackCopy(text); }
+  }
+
+  buildGroups();
+  $("customJob").addEventListener("input", function(){
+    var v = clean(this.value);
+    [].forEach.call(document.querySelectorAll(".chip"), function(c){ c.classList.remove("on"); });
+    selected = v; $("go").disabled = !v;
+  });
+  $("customJob").addEventListener("keydown", function(e){ if (e.key === "Enter" && selected) { e.preventDefault(); $("go").click(); } });
+  $("go").addEventListener("click", function(){
+    if (!selected) return;
+    openCard(selected);
+    try { history.pushState({ job: current.job }, "", "#" + encodeURIComponent(current.job)); } catch (e) {}
+  });
+  $("who").addEventListener("input", function(){ if (!edited && current) { $("openText").value = opening(current.job); fitOpen(); } });
+  $("openText").addEventListener("input", function(){ edited = true; fitOpen(); });
+  $("copyOpen").addEventListener("click", function(){ copy($("openText").value); });
+  $("copyAll").addEventListener("click", function(){ if (current) copy(allText()); });
+  $("back").addEventListener("click", function(){
+    if (history.state && history.state.job) { history.back(); } else { current = null; show("home"); }
+  });
+  window.addEventListener("popstate", function(e){
+    if (e.state && e.state.job) { openCard(e.state.job); } else { current = null; show("home"); }
+  });
+  var initial = "";
+  try { initial = decodeURIComponent((location.hash || "").slice(1)); } catch (e) {}
+  if (clean(initial)) { select(clean(initial)); openCard(initial); try { history.replaceState({ job: current.job }, "", location.href); } catch (e) {} }
+})();
+</script>
+</body>
+</html>
