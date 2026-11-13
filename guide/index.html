@@ -219,7 +219,7 @@ button{cursor:pointer}
 const API_URL = "";
 
 const END_REQUEST = "我想先聊到这里，请帮我整理探索卡。";
-const MAX_TURNS = 10;
+const MAX_TURNS = 12;
 const INTEREST_RE = /^[\u4e00-\u9fffA-Za-z0-9·、\- ]{1,10}$/;
 const SAFETY_RE = /自杀|不想活|想死|去死|自残|伤害自己|割腕|跳楼|轻生|被欺负|被霸凌|霸凌|被打/;
 const SAFETY_REPLY = "听你这么说，我很担心你。这件事比聊职业重要得多。请现在就告诉一个你信任的大人或者老师；也可以拨打 12355 青少年服务热线，会有人认真听你说。";
@@ -456,7 +456,7 @@ async function turn(userText) {
 
 function render(res) {
   if (res.safety) { safetyStop(); return; }
-  S.msgs.push({ role: "assistant", content: res.reply });
+  S.msgs.push({ role: "assistant", content: res.reply, stage: res.stage, options: res.options || [] });
   addMsg("a", res.reply);
   if (res.stage >= 1 && res.stage <= 4) setStage(res.stage);
   if (res.done && res.card) {
@@ -514,7 +514,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 function demoNext(text) {
   const d = S.demo;
   if (!d) {
-    S.demo = { step: 1, flavor: null, list: [], seen: [], focus: null };
+    S.demo = { step: 1, flavor: null, list: [], seen: [], focus: null, own: "" };
     const first = S.interests[0], it = IMAP[first];
     const act = it ? it.act : "「" + first + "」";
     const which = S.interests.length > 1 ? "先说你选的第一个：" : "";
@@ -548,15 +548,31 @@ function demoNext(text) {
     if (/换|别的|另一个/.test(text)) return switchCareer();
     d.step = 6;
     const c = C(d.focus);
-    return { reply: "还有一个常见的误会：很多人以为" + d.focus + c[4] + "，其实" + c[5] + "。\n这些只是一般情况。真实的样子，要问正在做这份工作的人。要不要把今天聊的，整理成一张探索卡？", options: ["整理探索卡", "再了解一个职业"], stage: 3 };
+    return { reply: "还有一个常见的误会：很多人以为" + d.focus + c[4] + "，其实" + c[5] + "。\n如果能问一位正在做" + d.focus + "的人一个问题，你最想问什么？也可以自己打字。", options: Object.keys(OWN_Q), stage: 3 };
   }
   if (d.step === 6) {
+    if (/再了解|换一个|别的|另一个/.test(text)) return switchCareer();
+    d.step = 7;
+    d.own = OWN_Q[text] || refineOwn(text);
+    const changed = OWN_Q[text] ? "改成问对方亲身经历过的一次具体的事，对方更好讲，你也能听到细节。" : "问的时候，请对方讲一次最近的具体经历，比空泛地聊更有用。";
+    return { reply: "可以这样问：「" + d.own + "」\n" + changed + "\n接下来想整理探索卡，还是再了解一个职业？", options: ["整理探索卡", "再了解一个职业"], stage: 3 };
+  }
+  if (d.step === 7) {
     if (/再了解|换|别的|另一个/.test(text)) return switchCareer();
     return demoCard();
   }
   return demoCard();
 }
 function C(name) { return CAREERS[name] || CAREERS["设计师"]; }
+const OWN_Q = {
+  "最累的一次是什么时候": "最近一次觉得特别累，是什么时候？当时发生了什么？",
+  "当初是怎么入行的": "你当初是怎么走进这一行的？第一份工作是怎么找到的？",
+  "AI 对这行有影响吗": "最近一年，AI 让你的工作有了哪些变化？"
+};
+function refineOwn(t) {
+  t = String(t || "").replace(/[？?。！!\s]+$/, "").slice(0, 40);
+  return t ? t + "？能讲讲最近一次的具体经历吗？" : BASE_Q;
+}
 function listReply(head, list) {
   const marks = ["①", "②", "③"];
   const lines = list.map((n, i) => marks[i] + " " + n + "：" + C(n)[0]);
@@ -565,7 +581,7 @@ function listReply(head, list) {
 function switchCareer() {
   const d = S.demo;
   const left = d.list.filter((n) => !d.seen.includes(n));
-  if (!left.length) { d.step = 6; return { reply: "这 3 个都看过了。要不要把今天聊的整理成探索卡，再去问一位真人？", options: ["整理探索卡"], stage: 3 }; }
+  if (!left.length) { d.step = 7; return { reply: "这 3 个都看过了。要不要把今天聊的整理成探索卡，再去问一位真人？", options: ["整理探索卡"], stage: 3 }; }
   d.step = 3;
   const r = listReply("好。还剩这几个：", left);
   r.reply = r.reply.replace("①", "·").replace("②", "·");
@@ -605,7 +621,7 @@ function demoCard() {
       interests: S.interests.slice(), careers: d.list.slice(), focus,
       learned: focus + c[5] + "。",
       opening: "您好，我在了解「" + focus + "」这份工作。想请您花 15 分钟，讲讲您真实的一天，可以吗？",
-      questions: [BASE_Q, c[6], c[7]]
+      questions: (d.own ? [d.own, BASE_Q, c[6]] : [BASE_Q, c[6], c[7]]).filter((q, i, a) => a.indexOf(q) === i).concat([c[7]]).slice(0, 3)
     }
   };
 }
