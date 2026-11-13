@@ -65,7 +65,7 @@ button{cursor:pointer}
 
 /* 对话 */
 .bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:6px;height:56px;padding:0 10px;background:rgba(243,244,247,.94);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.back{width:40px;height:40px;border-radius:12px;font-size:28px;line-height:36px;color:var(--ink2)}
+.back{width:44px;height:44px;border-radius:12px;font-size:28px;line-height:40px;color:var(--ink2)}
 .bar-title{display:flex;flex-direction:column;min-width:0}
 .bar-title b{font-size:16px}
 .bar-title span{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -329,6 +329,7 @@ $("customForm").addEventListener("submit", (e) => {
   const v = $("customInput").value.trim();
   if (!v) return;
   if (!INTEREST_RE.test(v)) { $("customHint").textContent = "用 10 个字以内的中文、字母或数字写，不要标点符号。"; return; }
+  if (SAFETY_RE.test(v)) { $("customInput").value = ""; $("customHint").textContent = ""; safetyFromHome(); return; }
   if (picked.includes(v)) { $("customInput").value = ""; return; }
   if (picked.length >= 3) { $("customHint").textContent = "最多选 3 个，先去掉一个再加。"; return; }
   if (!customs.includes(v) && !IMAP[v]) customs.push(v);
@@ -436,6 +437,17 @@ function safetyStop() {
   addMsg("a", SAFETY_REPLY, { safe: true });
   $("composer").hidden = true;
   setOptions([], [["回到首页", goHome]]);
+}
+
+// 在首页“自己写一个”里写了求助的话：不当成兴趣，直接给求助信息
+function safetyFromHome() {
+  Object.assign(S, { interests: [], msgs: [], stage: 1, busy: false, done: true, card: null, fails: 0, demo: null, turns: 0 });
+  $("log").textContent = ""; setOptions([]);
+  $("chatInterests").textContent = "";
+  $("modeNote").hidden = true;
+  setStage(1); updateWrap(); show("chat");
+  history.replaceState(null, "", "#chat");
+  safetyStop();
 }
 
 async function turn(userText) {
@@ -656,7 +668,7 @@ async function copyText(t) {
   }
 }
 $("copyBtn").addEventListener("click", async () => { if (S.card) toast(await copyText(cardText(S.card)) ? "已复制，可以粘贴到微信" : "没复制成功，可以直接截图"); });
-$("againBtn").addEventListener("click", goHome);
+$("againBtn").addEventListener("click", () => { picked.length = 0; renderChips(); goHome(); });
 $("cardBack").addEventListener("click", () => { show("chat"); history.replaceState(null, "", "#chat"); });
 
 /* ========= 其他 ========= */
